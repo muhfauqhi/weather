@@ -23,7 +23,9 @@ class Temperature {
   /// Convert temperature to Fahrenheit
   double get fahrenheit => _kelvin != null ? _kelvin * (9 / 5) - 459.67 : null;
 
-  String toString() => celsius != null ? '${celsius.toStringAsFixed(1)} Celsius' : "No temperature";
+  String toString() => celsius != null
+      ? '${celsius.toStringAsFixed(1)} Celsius'
+      : "No temperature";
 }
 
 /// A class for storing a weather-query response from OpenWeatherMap.
@@ -205,5 +207,492 @@ List<Weather> _parseForecast(Map<String, dynamic> jsonForecast) {
     w['sys'] = {'country': country};
     w['coord'] = {'lat': lat, 'lon': lon};
     return Weather(w);
+  }).toList();
+}
+
+/// A class for storing a weather-query response from OpenWeatherMap.
+/// This includes various measures such as location,
+/// temperature, wind, snow, rain and humidity.
+class DailyWeather {
+  String _weatherMain, _weatherDescription, _weatherIcon;
+  Temperature _tempMin,
+      _tempMax,
+      _tempDay,
+      _tempNight,
+      _tempEve,
+      _tempMorn,
+      _tempFeelsLikeDay,
+      _tempFeelsLikeNight,
+      _tempFeelsLikeEve,
+      _tempFeelsLikeMorn;
+  Map<String, dynamic> _weatherData;
+
+  DateTime _date, _sunrise, _sunset;
+  double _windSpeed, _windGust, _uvi;
+
+  int _weatherConditionCode, _humidity, _pressure, _windDegree, _cloudiness;
+
+  DailyWeather(Map<String, dynamic> jsonData) {
+    Map<String, dynamic> temp = jsonData['temp'];
+    Map<String, dynamic> feelsLike = jsonData['feels_like'];
+    Map<String, dynamic> weather = jsonData['weather'][0];
+
+    _sunrise = _unpackDate(jsonData, 'sunrise');
+    _sunset = _unpackDate(jsonData, 'sunset');
+
+    _weatherData = jsonData;
+    _weatherMain = _unpackString(weather, 'main');
+    _weatherDescription = _unpackString(weather, 'description');
+    _weatherIcon = _unpackString(weather, 'icon');
+    _weatherConditionCode = _unpackInt(weather, 'id');
+
+    _tempMin = _unpackTemperature(temp, 'min');
+    _tempMax = _unpackTemperature(temp, 'max');
+    _tempDay = _unpackTemperature(temp, 'day');
+    _tempNight = _unpackTemperature(temp, 'night');
+    _tempEve = _unpackTemperature(temp, 'eve');
+    _tempMorn = _unpackTemperature(temp, 'morn');
+
+    _tempFeelsLikeDay = _unpackTemperature(feelsLike, 'day');
+    _tempFeelsLikeNight = _unpackTemperature(feelsLike, 'night');
+    _tempFeelsLikeEve = _unpackTemperature(feelsLike, 'eve');
+    _tempFeelsLikeMorn = _unpackTemperature(feelsLike, 'morn');
+
+    _humidity = _unpackInt(jsonData, 'humidity');
+    _pressure = _unpackInt(jsonData, 'pressure');
+
+    _windSpeed = _unpackDouble(jsonData, 'wind_speed');
+    _windDegree = _unpackInt(jsonData, 'wind_deg');
+
+    _cloudiness = _unpackInt(jsonData, 'clouds');
+    _uvi = _unpackDouble(jsonData, 'uvi');
+
+    _date = _unpackDate(jsonData, 'dt');
+  }
+
+  /// The original JSON data from the API
+  Map<String, dynamic> toJson() => _weatherData;
+
+  /// The weather data formatted as a string with newlines
+  String toString() {
+    return '''
+    Date: $_date
+    Weather: $_weatherMain, $_weatherDescription
+    Temp (today): 
+      (min): $_tempMin, (max): $_tempMax,  
+      (day): $_tempDay, (night): $_tempNight, (eve): $_tempEve, (morn): $_tempMorn,
+      (feelsLike):  (day) $_tempFeelsLikeDay, (night) $_tempFeelsLikeNight, (eve) $_tempFeelsLikeEve, (morn) $_tempFeelsLikeMorn
+    Sunrise: $_sunrise, Sunset: $_sunset
+    Wind: speed $_windSpeed, degree: $_windDegree, gust $_windGust
+    Weather Condition code: $_weatherConditionCode
+    Humidity: $humidity
+    Cloudiness: $cloudiness
+    Uvi: $uvi
+    ''';
+  }
+
+  /// A long description of the weather
+  String get weatherDescription => _weatherDescription;
+
+  /// A brief description of the weather
+  String get weatherMain => _weatherMain;
+
+  /// Icon depicting current weather
+  String get weatherIcon => _weatherIcon;
+
+  /// Weather condition codes
+  int get weatherConditionCode => _weatherConditionCode;
+
+  /// The level of cloudiness in Okta (0-9 scale)
+  int get cloudiness => _cloudiness;
+
+  /// Wind direction in degrees
+  int get windDegree => _windDegree;
+
+  /// Wind speed in m/s
+  double get windSpeed => _windSpeed;
+
+  /// Wind gust in m/s
+  double get windGust => _windGust;
+
+  /// Average visibility in metres
+  // double get visibility => _visibility;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  // Temperature get tempFeelsLike => _tempFeelsLike;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLikeDay => _tempFeelsLikeDay;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLikeNight => _tempFeelsLikeNight;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLikeEve => _tempFeelsLikeEve;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLikeMorn => _tempFeelsLikeMorn;
+
+  /// Max [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  // Temperature get temperature => _temperature;
+
+  /// Max [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempMax => _tempMax;
+
+  /// Min [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempMin => _tempMin;
+
+  /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempDay => _tempDay;
+
+  /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempNight => _tempNight;
+
+  /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempEve => _tempEve;
+
+  /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempMorn => _tempMorn;
+
+  /// Pressure in Pascal
+  int get pressure => _pressure;
+
+  /// Humidity in percent
+  int get humidity => _humidity;
+
+  /// The maximum value of UV index for the day
+  double get uvi => _uvi;
+
+  /// Date of the weather observation
+  DateTime get date => _date;
+
+  /// Timestamp of sunset
+  DateTime get sunset => _sunset;
+
+  /// Timestamp of sunrise
+  DateTime get sunrise => _sunrise;
+}
+
+class HourlyWeather {
+  String _weatherMain, _weatherDescription, _weatherIcon;
+  Temperature _temperature, _tempFeelsLike;
+  Map<String, dynamic> _weatherData;
+
+  DateTime _date, _sunrise, _sunset;
+
+  double _windSpeed, _uvi;
+
+  int _weatherConditionCode,
+      _visibility,
+      _cloudiness,
+      _pressure,
+      _humidity,
+      _windDegree;
+
+  HourlyWeather(Map<String, dynamic> jsonData) {
+    Map<String, dynamic> weather = jsonData['weather'][0];
+
+    _sunrise = _unpackDate(jsonData, 'sunrise');
+    _sunset = _unpackDate(jsonData, 'sunset');
+
+    _weatherData = jsonData;
+    _weatherMain = _unpackString(weather, 'main');
+    _weatherDescription = _unpackString(weather, 'description');
+    _weatherIcon = _unpackString(weather, 'icon');
+    _weatherConditionCode = _unpackInt(weather, 'id');
+
+    _temperature = _unpackTemperature(jsonData, 'temp');
+    _tempFeelsLike = _unpackTemperature(jsonData, 'feels_like');
+
+    _humidity = _unpackInt(jsonData, 'humidity');
+    _pressure = _unpackInt(jsonData, 'pressure');
+
+    _windSpeed = _unpackDouble(jsonData, 'wind_speed');
+    _windDegree = _unpackInt(jsonData, 'wind_deg');
+
+    _cloudiness = _unpackInt(jsonData, 'clouds');
+    _visibility = _unpackInt(jsonData, 'visibility');
+    _uvi = _unpackDouble(jsonData, 'uvi');
+
+    _date = _unpackDate(jsonData, 'dt');
+  }
+
+  /// The original JSON data from the API
+  Map<String, dynamic> toJson() => _weatherData;
+
+  /// The weather data formatted as a string with newlines
+  String toString() {
+    return '''
+    Date: $_date
+    Weather: $_weatherMain, $_weatherDescription
+    Temp (current): Temp: $_temperature Temp (feels like): $_tempFeelsLike
+    Sunrise: $_sunrise, Sunset: $_sunset
+    Wind: speed $_windSpeed, degree: $_windDegree
+    Weather Condition code: $_weatherConditionCode
+    Humidity: $humidity
+    Pressure: $pressure
+    Cloudiness: $cloudiness
+    Uvi: $uvi
+    ''';
+  }
+
+  /// A long description of the weather
+  String get weatherDescription => _weatherDescription;
+
+  /// A brief description of the weather
+  String get weatherMain => _weatherMain;
+
+  /// Icon depicting current weather
+  String get weatherIcon => _weatherIcon;
+
+  /// Weather condition codes
+  int get weatherConditionCode => _weatherConditionCode;
+
+  /// The level of cloudiness in Okta (0-9 scale)
+  int get cloudiness => _cloudiness;
+
+  /// Wind direction in degrees
+  int get windDegree => _windDegree;
+
+  /// Wind speed in m/s
+  double get windSpeed => _windSpeed;
+
+  /// Average visibility in metres
+  int get visibility => _visibility;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLike => _tempFeelsLike;
+
+  /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get temperature => _temperature;
+
+  /// Pressure in Pascal
+  int get pressure => _pressure;
+
+  /// Humidity in percent
+  int get humidity => _humidity;
+
+  /// The maximum value of UV index for the day
+  double get uvi => _uvi;
+
+  /// Date of the weather observation
+  DateTime get date => _date;
+
+  /// Timestamp of sunset
+  DateTime get sunset => _sunset;
+
+  /// Timestamp of sunrise
+  DateTime get sunrise => _sunrise;
+}
+
+class MinutelyWeather {
+  DateTime _date;
+  int _precipitation;
+
+  MinutelyWeather(Map<String, dynamic> jsonData) {
+    _date = _unpackDate(jsonData, 'dt');
+    _precipitation = _unpackInt(jsonData, 'precipitation');
+  }
+
+  /// Date of the weather observation
+  DateTime get date => _date;
+
+  /// Pprecipitation volumne in mm
+  int get precipitation => _precipitation;
+
+  String toString() {
+    return '''
+    Date: $date
+    Precipitation: $precipitation
+    ''';
+  }
+}
+
+class OneCallWeather {
+  List<DailyWeather> _daily;
+
+  List<HourlyWeather> _hourly;
+
+  List<MinutelyWeather> _minutely;
+
+  CurrentWeather _current;
+
+  double _latitude, _longitude;
+
+  String _timezone;
+
+  Map<String, dynamic> _weatherData;
+
+  OneCallWeather(Map<String, dynamic> jsonData) {
+    _latitude = _unpackDouble(jsonData, 'lat');
+    _longitude = _unpackDouble(jsonData, 'lon');
+    _daily = _parseOneCallDaily(jsonData['daily']);
+    _current = CurrentWeather(jsonData['current']);
+    _hourly = _parseOneCallHourly(jsonData['hourly']);
+    _minutely = _parseOneCallMinutely(jsonData['minutely']);
+    _timezone = _unpackString(jsonData, 'timezone');
+    _weatherData = jsonData;
+  }
+
+  Map<String, dynamic> toJson() => _weatherData;
+
+  List<DailyWeather> get daily => _daily;
+
+  List<HourlyWeather> get hourly => _hourly;
+
+  List<MinutelyWeather> get minutely => _minutely;
+
+  CurrentWeather get current => _current;
+
+  /// Longitude of the weather observation
+  double get longitude => _longitude;
+
+  /// Latitude of the weather observation
+  double get latitude => _latitude;
+
+  // Timezone
+  String get timezone => _timezone;
+
+  String toString() {
+    return '''
+    Place Name: $timezone ($latitude, $longitude)
+    Current: $current
+    Daily: 
+    $daily
+    Hourly: 
+    $hourly
+    Minutely: 
+    $minutely
+    ''';
+  }
+}
+
+class CurrentWeather {
+  String _weatherMain, _weatherDescription, _weatherIcon;
+  Temperature _temperature, _tempFeelsLike;
+  Map<String, dynamic> _weatherData;
+
+  DateTime _date, _sunrise, _sunset;
+
+  double _windSpeed, _uvi;
+
+  int _weatherConditionCode,
+      _visibility,
+      _cloudiness,
+      _pressure,
+      _humidity,
+      _windDegree;
+
+  CurrentWeather(Map<String, dynamic> jsonData) {
+    Map<String, dynamic> weather = jsonData['weather'][0];
+
+    _sunrise = _unpackDate(jsonData, 'sunrise');
+    _sunset = _unpackDate(jsonData, 'sunset');
+
+    _weatherData = jsonData;
+    _weatherMain = _unpackString(weather, 'main');
+    _weatherDescription = _unpackString(weather, 'description');
+    _weatherIcon = _unpackString(weather, 'icon');
+    _weatherConditionCode = _unpackInt(weather, 'id');
+
+    _temperature = _unpackTemperature(jsonData, 'temp');
+    _tempFeelsLike = _unpackTemperature(jsonData, 'feels_like');
+
+    _humidity = _unpackInt(jsonData, 'humidity');
+    _pressure = _unpackInt(jsonData, 'pressure');
+
+    _windSpeed = _unpackDouble(jsonData, 'wind_speed');
+    _windDegree = _unpackInt(jsonData, 'wind_deg');
+
+    _cloudiness = _unpackInt(jsonData, 'clouds');
+    _visibility = _unpackInt(jsonData, 'visibility');
+    _uvi = _unpackDouble(jsonData, 'uvi');
+
+    _date = _unpackDate(jsonData, 'dt');
+  }
+
+  /// The original JSON data from the API
+  Map<String, dynamic> toJson() => _weatherData;
+
+  /// The weather data formatted as a string with newlines
+  String toString() {
+    return '''
+    Date: $_date
+    Weather: $_weatherMain, $_weatherDescription
+    Temp (current): Temp: $_temperature Temp (feels like): $_tempFeelsLike
+    Sunrise: $_sunrise, Sunset: $_sunset
+    Wind: speed $_windSpeed, degree: $_windDegree
+    Weather Condition code: $_weatherConditionCode
+    Humidity: $humidity
+    Pressure: $pressure
+    Cloudiness: $cloudiness
+    Uvi: $uvi
+    ''';
+  }
+
+  /// A long description of the weather
+  String get weatherDescription => _weatherDescription;
+
+  /// A brief description of the weather
+  String get weatherMain => _weatherMain;
+
+  /// Icon depicting current weather
+  String get weatherIcon => _weatherIcon;
+
+  /// Weather condition codes
+  int get weatherConditionCode => _weatherConditionCode;
+
+  /// The level of cloudiness in Okta (0-9 scale)
+  int get cloudiness => _cloudiness;
+
+  /// Wind direction in degrees
+  int get windDegree => _windDegree;
+
+  /// Wind speed in m/s
+  double get windSpeed => _windSpeed;
+
+  /// Average visibility in metres
+  int get visibility => _visibility;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLike => _tempFeelsLike;
+
+  /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get temperature => _temperature;
+
+  /// Pressure in Pascal
+  int get pressure => _pressure;
+
+  /// Humidity in percent
+  int get humidity => _humidity;
+
+  /// The maximum value of UV index for the day
+  double get uvi => _uvi;
+
+  /// Date of the weather observation
+  DateTime get date => _date;
+
+  /// Timestamp of sunset
+  DateTime get sunset => _sunset;
+
+  /// Timestamp of sunrise
+  DateTime get sunrise => _sunrise;
+}
+
+List<DailyWeather> _parseOneCallDaily(List<dynamic> jsonOneCall) {
+  return jsonOneCall.map((w) {
+    return DailyWeather(w);
+  }).toList();
+}
+
+List<HourlyWeather> _parseOneCallHourly(List<dynamic> jsonOneCall) {
+  return jsonOneCall.map((w) {
+    return HourlyWeather(w);
+  }).toList();
+}
+
+List<MinutelyWeather> _parseOneCallMinutely(List<dynamic> jsonOneCall) {
+  return jsonOneCall.map((w) {
+    return MinutelyWeather(w);
   }).toList();
 }

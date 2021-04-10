@@ -6,9 +6,21 @@ class WeatherFactory {
   Language language = Language.ENGLISH;
   static const String FIVE_DAY_FORECAST = 'forecast';
   static const String CURRENT_WEATHER = 'weather';
+  static const String ONE_CALL = 'onecall';
   static const int STATUS_OK = 200;
 
   WeatherFactory(this._apiKey, {this.language});
+
+  /// Fetch current weather based on geographical coordinates
+  /// Result is JSON.
+  /// For API documentation, see: https://openweathermap.org/onecall
+  Future<OneCallWeather> oneCallApiByLocation(
+      double latitude, double longitude) async {
+    Map<String, dynamic> jsonOneCall =
+        await _sendRequest(ONE_CALL, lat: latitude, lon: longitude);
+    // List<DailyWeather> forecasts = _parseOneCall(jsonOneCall);
+    return OneCallWeather(jsonOneCall);
+  }
 
   /// Fetch current weather based on geographical coordinates
   /// Result is JSON.
