@@ -513,7 +513,7 @@ class OneCallWeather {
 
   List<HourlyWeather> _hourly;
 
-  List<MinutelyWeather> _minutely;
+  // List<MinutelyWeather> _minutely;
 
   CurrentWeather _current;
 
@@ -529,7 +529,7 @@ class OneCallWeather {
     _daily = _parseOneCallDaily(jsonData['daily']);
     _current = CurrentWeather(jsonData['current']);
     _hourly = _parseOneCallHourly(jsonData['hourly']);
-    _minutely = _parseOneCallMinutely(jsonData['minutely']);
+    // _minutely = _parseOneCallMinutely(jsonData['minutely']);
     _timezone = _unpackString(jsonData, 'timezone');
     _weatherData = jsonData;
   }
@@ -540,7 +540,7 @@ class OneCallWeather {
 
   List<HourlyWeather> get hourly => _hourly;
 
-  List<MinutelyWeather> get minutely => _minutely;
+  // List<MinutelyWeather> get minutely => _minutely;
 
   CurrentWeather get current => _current;
 
@@ -561,8 +561,6 @@ class OneCallWeather {
     $daily
     Hourly: 
     $hourly
-    Minutely: 
-    $minutely
     ''';
   }
 }
