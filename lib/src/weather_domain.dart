@@ -485,28 +485,28 @@ class HourlyWeather {
   DateTime get sunrise => _sunrise;
 }
 
-class MinutelyWeather {
-  DateTime _date;
-  int _precipitation;
+// class MinutelyWeather {
+//   DateTime _date;
+//   int _precipitation;
 
-  MinutelyWeather(Map<String, dynamic> jsonData) {
-    _date = _unpackDate(jsonData, 'dt');
-    _precipitation = _unpackInt(jsonData, 'precipitation');
-  }
+//   MinutelyWeather(Map<String, dynamic> jsonData) {
+//     _date = _unpackDate(jsonData, 'dt');
+//     _precipitation = _unpackInt(jsonData, 'precipitation');
+//   }
 
-  /// Date of the weather observation
-  DateTime get date => _date;
+//   /// Date of the weather observation
+//   DateTime get date => _date;
 
-  /// Pprecipitation volumne in mm
-  int get precipitation => _precipitation;
+//   /// Pprecipitation volumne in mm
+//   int get precipitation => _precipitation;
 
-  String toString() {
-    return '''
-    Date: $date
-    Precipitation: $precipitation
-    ''';
-  }
-}
+//   String toString() {
+//     return '''
+//     Date: $date
+//     Precipitation: $precipitation
+//     ''';
+//   }
+// }
 
 class OneCallWeather {
   List<DailyWeather> _daily;
@@ -689,8 +689,8 @@ List<HourlyWeather> _parseOneCallHourly(List<dynamic> jsonOneCall) {
   }).toList();
 }
 
-List<MinutelyWeather> _parseOneCallMinutely(List<dynamic> jsonOneCall) {
-  return jsonOneCall.map((w) {
-    return MinutelyWeather(w);
-  }).toList();
-}
+// List<MinutelyWeather> _parseOneCallMinutely(List<dynamic> jsonOneCall) {
+//   return jsonOneCall.map((w) {
+//     return MinutelyWeather(w);
+//   }).toList();
+// }
